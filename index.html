@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuestro Menú</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --terracotta: #C1603A;
+    --clay:       #D98B5F;
+    --cream:      #FDF6ED;
+    --parchment:  #F2E8D9;
+    --bark:       #5C3D2E;
+    --bark-light: #8A6050;
+    --white:      #FFFFFF;
+    --shadow:     rgba(92,61,46,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: var(--cream); color: var(--bark); min-height: 100vh; }
+
+  /* ── HEADER ── */
+  header { background: var(--bark); padding: 16px 20px 0; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px var(--shadow); }
+  .header-top { display: flex; align-items: center; justify-content: center; gap: 10px; padding-bottom: 12px; }
+  .logo-flame { font-size: 24px; }
+  header h1 { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--cream); }
+  header h1 span { color: var(--clay); font-style: italic; }
+
+  /* ── NAV TABS ── */
+  .nav-tabs { display: flex; border-top: 1px solid rgba(255,255,255,0.1); }
+  .nav-tab { flex: 1; padding: 10px 4px; background: transparent; border: none; color: var(--bark-light); font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .nav-tab .tab-icon { font-size: 1rem; }
+  .nav-tab.active { color: var(--cream); border-bottom-color: var(--clay); }
+
+  /* ── FILTROS (solo en pestaña menú) ── */
+  .filters { display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px 10px; scrollbar-width: none; background: var(--bark); }
+  .filters::-webkit-scrollbar { display: none; }
+  .filter-btn { flex-shrink: 0; background: transparent; border: 1.5px solid var(--bark-light); color: var(--parchment); border-radius: 20px; padding: 4px 12px; font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .filter-btn.active, .filter-btn:hover { background: var(--terracotta); border-color: var(--terracotta); color: var(--white); }
+
+  /* ── PÁGINAS ── */
+  .page { display: none; padding: 20px 16px 100px; max-width: 480px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* ── SURPRISE ── */
+  .surprise-bar { background: linear-gradient(135deg, var(--terracotta), var(--clay)); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(193,96,58,0.25); }
+  .surprise-bar p { color: var(--white); font-size: 0.85rem; font-weight: 600; line-height: 1.3; }
+  .surprise-bar p em { font-style: normal; font-size: 1rem; font-family: 'Playfair Display', serif; }
+  .btn-surprise { background: var(--white); color: var(--terracotta); border: none; border-radius: 10px; padding: 8px 14px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; flex-shrink: 0; }
+
+  .section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bark-light); margin-bottom: 12px; }
+
+  /* ── CARDS ── */
+  .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card { background: var(--white); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 10px var(--shadow); cursor: pointer; transition: transform 0.18s, box-shadow 0.18s; }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px var(--shadow); }
+  .card:active { transform: scale(0.98); }
+  .card-img { width: 100%; aspect-ratio: 1/1; background: var(--parchment); display: flex; align-items: center; justify-content: center; font-size: 2.4rem; }
+  .card-body { padding: 10px 12px 12px; }
+  .card-name { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; color: var(--bark); line-height: 1.2; margin-bottom: 4px; }
+  .card-time { font-size: 0.72rem; color: var(--bark-light); }
+  .card-note { font-size: 0.7rem; color: var(--bark-light); font-style: italic; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── FAB ── */
+  .fab { position: fixed; bottom: 24px; right: 20px; width: 54px; height: 54px; border-radius: 50%; background: var(--terracotta); color: var(--white); border: none; font-size: 1.6rem; cursor: pointer; box-shadow: 0 4px 16px rgba(193,96,58,0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.15s, background 0.15s; z-index: 200; }
+  .fab:hover { background: var(--bark); transform: scale(1.08); }
+
+  /* ── OVERLAY / SHEET ── */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(92,61,46,0.45); z-index: 300; align-items: flex-end; justify-content: center; }
+  .overlay.open { display: flex; }
+  .sheet { background: var(--white); border-radius: 24px 24px 0 0; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 0 0 40px; animation: slideUp 0.28s ease; position: relative; }
+  @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .sheet-handle { width: 40px; height: 4px; background: var(--parchment); border-radius: 2px; margin: 12px auto 0; }
+  .sheet-hero { width: 100%; height: 180px; background: var(--parchment); display: flex; align-items: center; justify-content: center; font-size: 5rem; margin-top: 8px; }
+  .sheet-content { padding: 18px 22px 0; }
+  .sheet-category { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bark-light); margin-bottom: 4px; }
+  .sheet-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--bark); margin-bottom: 8px; line-height: 1.2; }
+  .badge { font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; background: var(--parchment); color: var(--bark-light); display: inline-block; margin-bottom: 16px; }
+  .sheet-actions { display: flex; gap: 8px; margin-bottom: 18px; }
+  .btn-action { flex: 1; padding: 9px 0; border-radius: 10px; border: 1.5px solid var(--parchment); background: var(--white); color: var(--bark-light); font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .btn-action:hover { border-color: var(--terracotta); color: var(--terracotta); background: #FFF5F1; }
+  .btn-action.danger:hover { border-color: #b94040; color: #b94040; background: #fff5f5; }
+  .btn-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; background: var(--parchment); border: none; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--bark); z-index: 10; }
+
+  /* ── NOTA ── */
+  .nota-box { background: var(--parchment); border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; }
+  .nota-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bark-light); margin-bottom: 6px; }
+  .nota-text { font-size: 0.88rem; color: var(--bark); line-height: 1.5; font-style: italic; cursor: pointer; min-height: 20px; }
+  .nota-text.vacia { color: var(--bark-light); font-style: normal; }
+  .nota-input { width: 100%; border: none; background: transparent; font-family: 'Nunito', sans-serif; font-size: 0.88rem; color: var(--bark); resize: none; outline: none; line-height: 1.5; min-height: 60px; font-style: italic; }
+  .nota-save-row { display: flex; justify-content: flex-end; margin-top: 8px; gap: 8px; }
+  .btn-nota { padding: 5px 14px; border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 700; cursor: pointer; border: none; }
+  .btn-nota-cancel { background: transparent; color: var(--bark-light); }
+  .btn-nota-save { background: var(--terracotta); color: var(--white); }
+
+  /* ── INGREDIENTES MODAL ── */
+  .ing-seccion { margin-bottom: 14px; }
+  .ing-seccion-titulo { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bark-light); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--parchment); }
+  .ingredient-list { list-style: none; }
+  .ingredient-list li { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--parchment); font-size: 0.9rem; }
+  .ingredient-list li::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--clay); flex-shrink: 0; }
+
+  /* ── PASOS ── */
+  .section-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bark-light); margin: 20px 0 10px; }
+  .steps-list { list-style: none; counter-reset: steps; }
+  .steps-list li { counter-increment: steps; display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--parchment); font-size: 0.9rem; line-height: 1.5; }
+  .steps-list li::before { content: counter(steps); width: 24px; height: 24px; border-radius: 50%; background: var(--terracotta); color: var(--white); font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+
+  /* ── FORM ── */
+  .edit-form { display: none; }
+  .edit-form.visible { display: block; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bark-light); margin-bottom: 5px; display: block; }
+  .form-input, .form-select, .form-textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--parchment); border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 0.88rem; color: var(--bark); background: var(--white); outline: none; transition: border-color 0.18s; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--clay); }
+  .form-textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+  .form-hint { font-size: 0.72rem; color: var(--bark-light); margin-top: 4px; }
+  .emoji-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; min-height: 36px; }
+  .emoji-sugerido { font-size: 1.5rem; cursor: pointer; padding: 4px; border-radius: 8px; transition: background 0.15s; border: 2px solid transparent; }
+  .emoji-sugerido:hover { background: var(--parchment); }
+  .emoji-sugerido.seleccionado { border-color: var(--terracotta); background: #FFF5F1; }
+  .ing-tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .ing-tab { padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--parchment); background: var(--white); color: var(--bark-light); font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.18s; }
+  .ing-tab.active { background: var(--terracotta); border-color: var(--terracotta); color: var(--white); }
+  .ing-section-form { display: none; }
+  .ing-section-form.visible { display: block; }
+  .edit-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-cancel-edit { flex: 1; padding: 11px; border-radius: 12px; border: 1.5px solid var(--parchment); background: var(--white); color: var(--bark-light); font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
+  .btn-save-edit { flex: 2; padding: 11px; border-radius: 12px; border: none; background: var(--terracotta); color: var(--white); font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
+
+  /* ── PÁGINA REFRI ── */
+  .refri-header { text-align: center; margin-bottom: 24px; }
+  .refri-header h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--bark); margin-bottom: 6px; }
+  .refri-header p { font-size: 0.85rem; color: var(--bark-light); line-height: 1.4; }
+  .refri-input-wrap { display: flex; gap: 8px; margin-bottom: 12px; }
+  .refri-input { flex: 1; padding: 10px 14px; border: 1.5px solid var(--parchment); border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.88rem; color: var(--bark); background: var(--white); outline: none; }
+  .refri-input:focus { border-color: var(--clay); }
+  .btn-refri-add { padding: 10px 16px; border-radius: 12px; background: var(--terracotta); color: var(--white); border: none; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; white-space: nowrap; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 36px; }
+  .chip { display: flex; align-items: center; gap: 6px; background: var(--parchment); color: var(--bark); border-radius: 20px; padding: 5px 12px; font-size: 0.82rem; font-weight: 600; }
+  .chip-x { background: none; border: none; color: var(--bark-light); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0; }
+  .btn-buscar { width: 100%; padding: 13px; border-radius: 14px; background: var(--terracotta); color: var(--white); border: none; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; margin-bottom: 24px; transition: background 0.18s; }
+  .btn-buscar:hover { background: var(--bark); }
+  .btn-buscar:disabled { background: var(--bark-light); cursor: not-allowed; }
+  .sugerencia-card { background: var(--white); border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 10px var(--shadow); display: flex; align-items: center; gap: 14px; cursor: pointer; transition: transform 0.15s; }
+  .sugerencia-card:hover { transform: translateY(-2px); }
+  .sugerencia-emoji { font-size: 2rem; flex-shrink: 0; }
+  .sugerencia-info { flex: 1; }
+  .sugerencia-nombre { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1rem; color: var(--bark); margin-bottom: 2px; }
+  .sugerencia-match { font-size: 0.75rem; color: var(--bark-light); }
+  .match-pill { display: inline-block; background: #E8F5E4; color: #4a7a3a; border-radius: 10px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; margin: 2px 2px 0 0; }
+  .miss-pill { display: inline-block; background: #FFF0EB; color: var(--terracotta); border-radius: 10px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; margin: 2px 2px 0 0; }
+  .refri-empty { text-align: center; padding: 32px 20px; color: var(--bark-light); }
+  .refri-empty .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+  /* ── PÁGINA LISTA ── */
+  .lista-header { text-align: center; margin-bottom: 24px; }
+  .lista-header h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--bark); margin-bottom: 6px; }
+  .lista-header p { font-size: 0.85rem; color: var(--bark-light); line-height: 1.4; }
+  .platillo-selector { background: var(--white); border-radius: 14px; padding: 4px; box-shadow: 0 2px 10px var(--shadow); margin-bottom: 20px; max-height: 220px; overflow-y: auto; }
+  .platillo-check { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: background 0.15s; }
+  .platillo-check:hover { background: var(--cream); }
+  .platillo-check input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--terracotta); cursor: pointer; flex-shrink: 0; }
+  .platillo-check-emoji { font-size: 1.3rem; }
+  .platillo-check-name { font-size: 0.9rem; font-weight: 600; color: var(--bark); }
+  .btn-generar { width: 100%; padding: 13px; border-radius: 14px; background: var(--terracotta); color: var(--white); border: none; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; margin-bottom: 24px; transition: background 0.18s; }
+  .btn-generar:hover { background: var(--bark); }
+  .btn-generar:disabled { background: var(--bark-light); cursor: not-allowed; }
+
+  /* Lista generada */
+  .lista-generada { display: none; }
+  .lista-generada.visible { display: block; }
+  .lista-seccion { margin-bottom: 20px; }
+  .lista-seccion-titulo { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bark-light); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid var(--parchment); display: flex; align-items: center; gap: 6px; }
+  .lista-item { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--parchment); }
+  .lista-item input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--terracotta); cursor: pointer; flex-shrink: 0; }
+  .lista-item label { font-size: 0.9rem; color: var(--bark); cursor: pointer; flex: 1; transition: all 0.2s; }
+  .lista-item input:checked + label { text-decoration: line-through; color: var(--bark-light); }
+  .lista-item-origen { font-size: 0.7rem; color: var(--bark-light); margin-left: auto; flex-shrink: 0; }
+  .lista-acciones { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-lista-sec { flex: 1; padding: 10px; border-radius: 12px; border: 1.5px solid var(--parchment); background: var(--white); color: var(--bark-light); font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; }
+  .btn-lista-pri { flex: 2; padding: 10px; border-radius: 12px; border: none; background: var(--terracotta); color: var(--white); font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; }
+
+  /* ── EMPTY / TOAST / SPINNER ── */
+  .empty { text-align: center; padding: 48px 20px; color: var(--bark-light); grid-column: 1/-1; }
+  .empty .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty p { font-size: 0.9rem; line-height: 1.5; }
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bark); color: var(--white); padding: 10px 20px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 999; white-space: nowrap; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (min-width: 500px) { .cards-grid { grid-template-columns: 1fr 1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <span class="logo-flame">🍳</span>
+    <h1>Nuestro <span>Menú</span></h1>
+  </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="cambiarPagina('menu', this)">
+      <span class="tab-icon">🍽</span> Menú
+    </button>
+    <button class="nav-tab" onclick="cambiarPagina('refri', this)">
+      <span class="tab-icon">🧊</span> ¿Qué tengo?
+    </button>
+    <button class="nav-tab" onclick="cambiarPagina('lista', this)">
+      <span class="tab-icon">🛒</span> Lista
+    </button>
+  </nav>
+  <div class="filters" id="filtros-menu">
+    <button class="filter-btn active" onclick="filtrar('todos', this)">Todos</button>
+    <button class="filter-btn" onclick="filtrar('desayuno', this)">☀️ Desayuno</button>
+    <button class="filter-btn" onclick="filtrar('comida', this)">🍽 Comida</button>
+    <button class="filter-btn" onclick="filtrar('cena', this)">🌙 Cena</button>
+    <button class="filter-btn" onclick="filtrar('antojo', this)">🍟 Antojo</button>
+    <button class="filter-btn" onclick="filtrar('postre', this)">🍮 Postre</button>
+  </div>
+</header>
+
+<!-- ── PÁGINA MENÚ ── -->
+<div class="page active" id="page-menu">
+  <div class="surprise-bar">
+    <p><em>¿Sin ideas?</em><br>Déjate sorprender hoy</p>
+    <button class="btn-surprise" onclick="sorprender()">🎲 Sorpréndeme</button>
+  </div>
+  <p class="section-label">Platillos guardados</p>
+  <div class="cards-grid" id="grid">
+    <div class="empty"><div class="empty-icon">⏳</div><p>Cargando platillos…</p></div>
+  </div>
+</div>
+
+<!-- ── PÁGINA REFRI ── -->
+<div class="page" id="page-refri">
+  <div class="refri-header">
+    <h2>🧊 ¿Qué puedo preparar?</h2>
+    <p>Escribe los ingredientes que tienes y te sugiero qué platillos puedes hacer.</p>
+  </div>
+  <div class="refri-input-wrap">
+    <input class="refri-input" id="refri-input" type="text" placeholder="Ej. pollo, cebolla, jitomate…" onkeydown="if(event.key==='Enter') agregarIngRefri()">
+    <button class="btn-refri-add" onclick="agregarIngRefri()">+ Agregar</button>
+  </div>
+  <div class="chips" id="refri-chips"></div>
+  <button class="btn-buscar" id="btn-buscar" onclick="buscarEnRefri()" disabled>🔍 Ver qué puedo hacer</button>
+  <div id="refri-resultados"></div>
+</div>
+
+<!-- ── PÁGINA LISTA ── -->
+<div class="page" id="page-lista">
+  <div class="lista-header">
+    <h2>🛒 Lista de compras</h2>
+    <p>Elige los platillos que quieres cocinar y te genero la lista de ingredientes.</p>
+  </div>
+  <p class="section-label">Selecciona los platillos</p>
+  <div class="platillo-selector" id="platillo-selector">
+    <p style="padding:16px;color:var(--bark-light);font-size:0.85rem">Cargando platillos…</p>
+  </div>
+  <button class="btn-generar" id="btn-generar" onclick="generarLista()" disabled>Generar lista de compras</button>
+  <div class="lista-generada" id="lista-generada"></div>
+</div>
+
+<button class="fab" id="fab-add" onclick="abrirNuevo()">＋</button>
+<div class="toast" id="toast"></div>
+
+<!-- ── MODAL RECETA ── -->
+<div class="overlay" id="overlay" onclick="cerrarModal(event)">
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle"></div>
+    <button class="btn-close" onclick="cerrarOverlay()">✕</button>
+    <div class="sheet-hero" id="modal-emoji"></div>
+    <div class="sheet-content">
+
+      <!-- Vista receta -->
+      <div id="view-mode">
+        <p class="sheet-category" id="modal-cat"></p>
+        <h2 class="sheet-title" id="modal-title"></h2>
+        <span class="badge" id="modal-time"></span>
+        <div class="sheet-actions">
+          <button class="btn-action" onclick="entrarEdicion()">✏️ Editar</button>
+          <button class="btn-action danger" onclick="eliminarPlatillo()">🗑 Eliminar</button>
+        </div>
+        <div class="nota-box">
+          <p class="nota-label">📝 Nota</p>
+          <div id="nota-display" onclick="editarNota()"></div>
+          <div id="nota-editor" style="display:none">
+            <textarea class="nota-input" id="nota-input" placeholder="Ej. queda mejor con chile de árbol…"></textarea>
+            <div class="nota-save-row">
+              <button class="btn-nota btn-nota-cancel" onclick="cancelarNota()">Cancelar</button>
+              <button class="btn-nota btn-nota-save" onclick="guardarNota()">Guardar nota</button>
+            </div>
+          </div>
+        </div>
+        <div id="modal-ingredientes"></div>
+        <p class="section-title">Preparación</p>
+        <ol class="steps-list" id="modal-steps"></ol>
+      </div>
+
+      <!-- Formulario editar/nuevo -->
+      <div id="edit-mode" class="edit-form">
+        <p class="section-title" id="form-title" style="margin-top:0">Nuevo platillo</p>
+        <div class="form-group">
+          <label class="form-label">Nombre del platillo</label>
+          <input class="form-input" id="edit-nombre" type="text" placeholder="Ej. Tacos de pollo" oninput="sugerirEmojis(this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Emoji</label>
+          <div class="emoji-row" id="emoji-sugerencias"></div>
+          <input class="form-input" id="edit-emoji" type="text" maxlength="2" placeholder="🍽" style="margin-top:8px">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoría</label>
+          <select class="form-select" id="edit-cat" onchange="actualizarVistaIngredientes(this.value)">
+            <option value="desayuno">☀️ Desayuno</option>
+            <option value="comida">🍽 Comida</option>
+            <option value="cena">🌙 Cena</option>
+            <option value="antojo">🍟 Antojo</option>
+            <option value="postre">🍮 Postre</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tiempo estimado</label>
+          <input class="form-input" id="edit-tiempo" type="text" placeholder="Ej. 30 min">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ingredientes</label>
+          <!-- Secciones (desayuno, comida, cena) -->
+          <div id="ing-con-secciones">
+            <div class="ing-tabs">
+              <button class="ing-tab active" onclick="cambiarSeccion('principal', this)">🥩 Principal</button>
+              <button class="ing-tab" onclick="cambiarSeccion('verduras', this)">🥦 Verduras</button>
+              <button class="ing-tab" onclick="cambiarSeccion('sazonadores', this)">🧂 Sazonadores</button>
+              <button class="ing-tab" onclick="cambiarSeccion('extras', this)">🫙 Extras</button>
+            </div>
+            <div id="sec-principal" class="ing-section-form visible"><textarea class="form-textarea" id="ing-principal" placeholder="Ej. 500 g pechuga de pollo&#10;2 dientes de ajo"></textarea></div>
+            <div id="sec-verduras" class="ing-section-form"><textarea class="form-textarea" id="ing-verduras" placeholder="Ej. 1 cebolla&#10;2 jitomates"></textarea></div>
+            <div id="sec-sazonadores" class="ing-section-form"><textarea class="form-textarea" id="ing-sazonadores" placeholder="Ej. Sal&#10;Pimienta&#10;Comino"></textarea></div>
+            <div id="sec-extras" class="ing-section-form"><textarea class="form-textarea" id="ing-extras" placeholder="Ej. Crema (opcional)&#10;Queso rallado"></textarea></div>
+          </div>
+          <!-- Sin secciones (antojo, postre) -->
+          <div id="ing-sin-secciones" style="display:none">
+            <textarea class="form-textarea" id="ing-libre" placeholder="Ej. 1 taza harina&#10;200 g chocolate&#10;2 huevos"></textarea>
+          </div>
+          <p class="form-hint">Un ingrediente por línea</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pasos de preparación</label>
+          <textarea class="form-textarea" id="edit-pasos" style="min-height:120px" placeholder="Un paso por línea"></textarea>
+          <p class="form-hint">Un paso por línea</p>
+        </div>
+        <div class="edit-actions">
+          <button class="btn-cancel-edit" onclick="cancelarEdicion()">Cancelar</button>
+          <button class="btn-save-edit" id="btn-guardar" onclick="guardarForm()">Agregar platillo</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-1gjiBAb3KWzxF3Rh-xhUPLqyJ7ltz8fhFHILK6Hwwf70PLpKv_E2U4HiQifls65M/exec';
+
+const EMOJI_MAP = [
+  { keys: ['pollo','pechuga','alita','muslo'],           emojis: ['🍗','🍖','🥘','🫕','🍲','🌮'] },
+  { keys: ['pasta','espagueti','fideo','tallarín','lasaña'], emojis: ['🍝','🍜','🫕','🥗'] },
+  { keys: ['taco','tortilla','quesadilla','burrito'],    emojis: ['🌮','🫔','🌯','🥙'] },
+  { keys: ['pizza'],                                      emojis: ['🍕','🧀','🫕'] },
+  { keys: ['sopa','caldo','consomé','pozole','menudo'],  emojis: ['🍲','🫕','🥘','🍜','🥣'] },
+  { keys: ['ensalada','vegano','vegetariano'],            emojis: ['🥗','🥦','🥬','🫑','🥕'] },
+  { keys: ['huevo','omelette','revuelto','estrellado'],  emojis: ['🍳','🥚','🥘','🧇'] },
+  { keys: ['hotcake','pancake','waffle','crepa'],        emojis: ['🥞','🧇','🍓','🫐'] },
+  { keys: ['arroz','risotto'],                           emojis: ['🍚','🥘','🫕','🍲'] },
+  { keys: ['carne','bistec','milanesa','res','cerdo','costilla'], emojis: ['🥩','🍖','🫕','🥘'] },
+  { keys: ['hamburguesa','burger'],                      emojis: ['🍔','🍟','🥪'] },
+  { keys: ['sandwich','torta','pambazo'],                emojis: ['🥪','🫓','🌮','🥙'] },
+  { keys: ['mariscos','camarón','pescado','atún'],       emojis: ['🦐','🐟','🦑','🦞','🫕'] },
+  { keys: ['flan','pastel','pay','postre','galleta'],    emojis: ['🍮','🎂','🍰','🍪','🧁'] },
+  { keys: ['helado','nieve','paleta'],                   emojis: ['🍦','🍨','🍧'] },
+  { keys: ['chile','enchilada','mole'],                  emojis: ['🌶️','🫕','🥘','🌮'] },
+  { keys: ['chilaquil'],                                 emojis: ['🌮','🥘','🍳','🌶️'] },
+  { keys: ['tamale','tamal'],                            emojis: ['🫔','🌽','🥘'] },
+  { keys: ['elote','maíz','esquite'],                    emojis: ['🌽','🧀','🌶️'] },
+];
+
+let platillos = [];
+let filtroActivo = 'todos';
+let idActivo = null;
+let modoForm = 'nuevo';
+let ingredientesRefri = [];
+let listaCheckId = 0;
+
+// ── TOAST ──
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── CARGAR ──
+async function cargarPlatillos() {
+  try {
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+    platillos = data.map(p => ({
+      id: p.ID, nombre: p.Nombre,
+      categoria: (p.Categoria||'').toLowerCase(),
+      tiempo: p.Tiempo, emoji: p.Emoji, nota: p.Nota||'',
+      ingredientes: parsearIngredientes(p.Ingredientes||''),
+      pasos: p.pasos||[]
+    }));
+    renderGridActual();
+    renderSelectorLista();
+  } catch {
+    document.getElementById('grid').innerHTML =
+      '<div class="empty"><div class="empty-icon">⚠️</div><p>No se pudo conectar.<br>Verifica tu conexión.</p></div>';
+  }
+}
+
+// ── PARSEAR / SERIALIZAR ──
+function parsearIngredientes(raw) {
+  if (!raw) return { principal:[], verduras:[], sazonadores:[], extras:[] };
+  if (raw.includes(';;')) {
+    const s = { principal:[], verduras:[], sazonadores:[], extras:[] };
+    raw.split(';;').forEach(b => {
+      const [k, items] = b.split(':');
+      if (k && items && s[k]!==undefined) s[k] = items.split('|').map(x=>x.trim()).filter(Boolean);
+    });
+    return s;
+  }
+  return { principal: raw.split('|').map(x=>x.trim()).filter(Boolean), verduras:[], sazonadores:[], extras:[] };
+}
+function serializarIngredientes(s) {
+  return ['principal','verduras','sazonadores','extras']
+    .filter(k => s[k]&&s[k].length)
+    .map(k => `${k}:${s[k].join('|')}`).join(';;');
+}
+function todosLosIngredientes(p) {
+  const i = p.ingredientes;
+  return [...(i.principal||[]), ...(i.verduras||[]), ...(i.sazonadores||[]), ...(i.extras||[])];
+}
+
+// ── NAVEGACIÓN ──
+function cambiarPagina(pagina, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + pagina).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('filtros-menu').style.display = pagina === 'menu' ? 'flex' : 'none';
+  document.getElementById('fab-add').style.display = pagina === 'menu' ? 'flex' : 'none';
+}
+
+// ── RENDER GRID ──
+function renderGrid(lista) {
+  const grid = document.getElementById('grid');
+  if (!lista.length) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">🍽️</div><p>No hay platillos aquí todavía.<br>Toca ＋ para agregar uno.</p></div>';
+    return;
+  }
+  grid.innerHTML = lista.map(p => `
+    <div class="card" onclick="abrirReceta('${p.id}')">
+      <div class="card-img">${p.emoji||'🍽'}</div>
+      <div class="card-body">
+        <p class="card-name">${p.nombre}</p>
+        <p class="card-time">⏱ ${p.tiempo}</p>
+        ${p.nota?`<p class="card-note">💬 ${p.nota}</p>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+function renderGridActual() {
+  const lista = filtroActivo==='todos' ? platillos : platillos.filter(p=>p.categoria===filtroActivo);
+  renderGrid(lista);
+}
+function filtrar(cat, btn) {
+  filtroActivo = cat;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGridActual();
+}
+
+// ── MODAL RECETA ──
+function abrirReceta(id) {
+  idActivo = id;
+  const p = platillos.find(x=>String(x.id)===String(id));
+  if (!p) return;
+  mostrarViewMode(); poblarModal(p); abrirOverlay();
+}
+function poblarModal(p) {
+  document.getElementById('modal-emoji').textContent = p.emoji||'🍽';
+  document.getElementById('modal-cat').textContent   = (p.categoria||'').charAt(0).toUpperCase()+(p.categoria||'').slice(1);
+  document.getElementById('modal-title').textContent = p.nombre;
+  document.getElementById('modal-time').textContent  = '⏱ '+p.tiempo;
+  document.getElementById('modal-steps').innerHTML   = (p.pasos||[]).map(s=>`<li>${s}</li>`).join('');
+  renderIngModal(p.ingredientes);
+  renderNota(p.nota);
+}
+function renderIngModal(ings) {
+  const SECS = [
+    {key:'principal',label:'🥩 Principal'},
+    {key:'verduras',label:'🥦 Verduras'},
+    {key:'sazonadores',label:'🧂 Sazonadores'},
+    {key:'extras',label:'🫙 Extras'},
+  ];
+  let html = '';
+  SECS.forEach(({key,label}) => {
+    const items = ings[key]||[];
+    if (!items.length) return;
+    html += `<div class="ing-seccion"><p class="ing-seccion-titulo">${label}</p>
+      <ul class="ingredient-list">${items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+  });
+  document.getElementById('modal-ingredientes').innerHTML = html||'<p class="form-hint" style="margin:8px 0">Sin ingredientes.</p>';
+}
+function abrirOverlay() {
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('sheet').scrollTop = 0;
+}
+function cerrarOverlay() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function cerrarModal(e) { if (e.target===document.getElementById('overlay')) cerrarOverlay(); }
+function mostrarViewMode() {
+  document.getElementById('view-mode').style.display='';
+  document.getElementById('edit-mode').classList.remove('visible');
+}
+function mostrarEditMode() {
+  document.getElementById('view-mode').style.display='none';
+  document.getElementById('edit-mode').classList.add('visible');
+  document.getElementById('sheet').scrollTop=0;
+}
+
+// ── NOTA ──
+function renderNota(nota) {
+  const d=document.getElementById('nota-display');
+  document.getElementById('nota-editor').style.display='none'; d.style.display='';
+  if(nota){d.className='nota-text';d.textContent=nota;}
+  else{d.className='nota-text vacia';d.textContent='Toca para agregar una nota…';}
+}
+function editarNota() {
+  const p=platillos.find(x=>String(x.id)===String(idActivo));
+  document.getElementById('nota-display').style.display='none';
+  document.getElementById('nota-editor').style.display='';
+  document.getElementById('nota-input').value=p.nota||'';
+  document.getElementById('nota-input').focus();
+}
+function cancelarNota(){renderNota(platillos.find(x=>String(x.id)===String(idActivo))?.nota);}
+async function guardarNota(){
+  const p=platillos.find(x=>String(x.id)===String(idActivo));
+  p.nota=document.getElementById('nota-input').value.trim();
+  renderNota(p.nota); renderGridActual();
+  try{await apiPost({accion:'editar',platillo:platilloPayload(p)});toast('✅ Nota guardada');}
+  catch{toast('⚠️ No se pudo guardar');}
+}
+
+// ── EMOJIS ──
+function sugerirEmojis(texto) {
+  const q=texto.toLowerCase(); let emojis=[];
+  for(const e of EMOJI_MAP){if(e.keys.some(k=>q.includes(k))){emojis=e.emojis;break;}}
+  document.getElementById('emoji-sugerencias').innerHTML=emojis.map(e=>
+    `<span class="emoji-sugerido" onclick="elegirEmoji('${e}')">${e}</span>`).join('');
+}
+function elegirEmoji(e){
+  document.getElementById('edit-emoji').value=e;
+  document.querySelectorAll('.emoji-sugerido').forEach(el=>el.classList.toggle('seleccionado',el.textContent===e));
+}
+
+// ── SECCIÓN FORM ──
+function cambiarSeccion(sec,btn){
+  document.querySelectorAll('.ing-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.ing-section-form').forEach(d=>d.classList.remove('visible'));
+  btn.classList.add('active');
+  document.getElementById('sec-'+sec).classList.add('visible');
+}
+function leerIngsForm(){
+  const cat = document.getElementById('edit-cat').value;
+  const libre = ['antojo','postre'].includes(cat);
+  if (libre) {
+    return {
+      principal: document.getElementById('ing-libre').value.split('\n').map(s=>s.trim()).filter(Boolean),
+      verduras: [], sazonadores: [], extras: []
+    };
+  }
+  return {
+    principal:   document.getElementById('ing-principal').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    verduras:    document.getElementById('ing-verduras').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    sazonadores: document.getElementById('ing-sazonadores').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    extras:      document.getElementById('ing-extras').value.split('\n').map(s=>s.trim()).filter(Boolean),
+  };
+}
+function actualizarVistaIngredientes(cat) {
+  const libre = ['antojo','postre'].includes(cat);
+  document.getElementById('ing-con-secciones').style.display = libre ? 'none' : '';
+  document.getElementById('ing-sin-secciones').style.display = libre ? '' : 'none';
+}
+function platilloPayload(p){
+  return {ID:p.id,nombre:p.nombre,categoria:p.categoria,tiempo:p.tiempo,emoji:p.emoji,
+          ingredientes:serializarIngredientes(p.ingredientes),pasos:p.pasos,nota:p.nota||''};
+}
+
+// ── EDICIÓN ──
+function entrarEdicion(){
+  modoForm='editar';
+  document.getElementById('form-title').textContent='Editar platillo';
+  document.getElementById('btn-guardar').textContent='Guardar cambios';
+  const p=platillos.find(x=>String(x.id)===String(idActivo));
+  document.getElementById('edit-nombre').value=p.nombre;
+  document.getElementById('edit-emoji').value=p.emoji||'';
+  document.getElementById('edit-cat').value=p.categoria;
+  actualizarVistaIngredientes(p.categoria);
+  document.getElementById('edit-tiempo').value=p.tiempo;
+  document.getElementById('ing-principal').value=(p.ingredientes.principal||[]).join('\n');
+  document.getElementById('ing-verduras').value=(p.ingredientes.verduras||[]).join('\n');
+  document.getElementById('ing-sazonadores').value=(p.ingredientes.sazonadores||[]).join('\n');
+  document.getElementById('ing-extras').value=(p.ingredientes.extras||[]).join('\n');
+  document.getElementById('ing-libre').value=(p.ingredientes.principal||[]).join('\n');
+  document.getElementById('edit-pasos').value=(p.pasos||[]).join('\n');
+  cambiarSeccion('principal',document.querySelector('.ing-tab'));
+  sugerirEmojis(p.nombre); mostrarEditMode();
+}
+function cancelarEdicion(){if(modoForm==='nuevo'){cerrarOverlay();return;}mostrarViewMode();}
+async function guardarForm(){
+  const nombre=document.getElementById('edit-nombre').value.trim();
+  const emoji=document.getElementById('edit-emoji').value.trim();
+  const cat=document.getElementById('edit-cat').value;
+  const tiempo=document.getElementById('edit-tiempo').value.trim();
+  const ings=leerIngsForm();
+  const pasos=document.getElementById('edit-pasos').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!nombre){toast('⚠️ El nombre es obligatorio');return;}
+  const btn=document.getElementById('btn-guardar');
+  btn.innerHTML='<span class="spinner"></span>'; btn.disabled=true;
+  if(modoForm==='editar'){
+    const p=platillos.find(x=>String(x.id)===String(idActivo));
+    p.nombre=nombre;p.emoji=emoji||p.emoji;p.categoria=cat;p.tiempo=tiempo||p.tiempo;p.ingredientes=ings;p.pasos=pasos;
+    try{await apiPost({accion:'editar',platillo:platilloPayload(p)});toast('✅ Platillo actualizado');mostrarViewMode();poblarModal(p);renderGridActual();renderSelectorLista();}
+    catch{toast('⚠️ Error al guardar');}
+  } else {
+    const nuevo={nombre,emoji:emoji||'🍽',categoria:cat,tiempo,ingredientes:ings,pasos,nota:''};
+    try{
+      const res=await apiPost({accion:'agregar',platillo:{...nuevo,ingredientes:serializarIngredientes(ings)}});
+      nuevo.id=res.id; platillos.push(nuevo);
+      toast('✅ Platillo agregado');cerrarOverlay();renderGridActual();renderSelectorLista();
+    }catch{toast('⚠️ Error al agregar');}
+  }
+  btn.innerHTML=modoForm==='editar'?'Guardar cambios':'Agregar platillo'; btn.disabled=false;
+}
+async function eliminarPlatillo(){
+  const p=platillos.find(x=>String(x.id)===String(idActivo));
+  if(!confirm(`¿Eliminar "${p.nombre}"?`))return;
+  try{
+    await apiPost({accion:'eliminar',platillo:{ID:p.id}});
+    platillos=platillos.filter(x=>String(x.id)!==String(idActivo));
+    toast('🗑 Platillo eliminado');cerrarOverlay();renderGridActual();renderSelectorLista();
+  }catch{toast('⚠️ No se pudo eliminar');}
+}
+function abrirNuevo(){
+  modoForm='nuevo'; idActivo=null;
+  document.getElementById('form-title').textContent='Nuevo platillo';
+  document.getElementById('btn-guardar').textContent='Agregar platillo';
+  ['edit-nombre','edit-emoji','edit-tiempo','ing-principal','ing-verduras','ing-sazonadores','ing-extras','ing-libre','edit-pasos']
+    .forEach(id=>document.getElementById(id).value='');
+  document.getElementById('edit-cat').value='comida';
+  actualizarVistaIngredientes('comida');
+  document.getElementById('emoji-sugerencias').innerHTML='';
+  document.getElementById('modal-emoji').textContent='🍽';
+  cambiarSeccion('principal',document.querySelector('.ing-tab'));
+  document.getElementById('view-mode').style.display='none';
+  document.getElementById('edit-mode').classList.add('visible');
+  abrirOverlay();
+}
+function sorprender(){
+  const lista=filtroActivo==='todos'?platillos:platillos.filter(p=>p.categoria===filtroActivo);
+  if(!lista.length)return;
+  abrirReceta(lista[Math.floor(Math.random()*lista.length)].id);
+}
+
+// ── REFRI ──
+function agregarIngRefri(){
+  const input=document.getElementById('refri-input');
+  const val=input.value.trim();
+  if(!val)return;
+  // permite separar por coma
+  val.split(',').map(s=>s.trim()).filter(Boolean).forEach(v=>{
+    if(!ingredientesRefri.includes(v.toLowerCase())) ingredientesRefri.push(v.toLowerCase());
+  });
+  input.value='';
+  renderChips();
+  document.getElementById('btn-buscar').disabled = ingredientesRefri.length===0;
+}
+function renderChips(){
+  document.getElementById('refri-chips').innerHTML=ingredientesRefri.map((ing,i)=>
+    `<span class="chip">${ing}<button class="chip-x" onclick="quitarIng(${i})">×</button></span>`
+  ).join('');
+  document.getElementById('btn-buscar').disabled=ingredientesRefri.length===0;
+}
+function quitarIng(i){
+  ingredientesRefri.splice(i,1); renderChips();
+  if(ingredientesRefri.length===0) document.getElementById('refri-resultados').innerHTML='';
+}
+function buscarEnRefri(){
+  if(!ingredientesRefri.length)return;
+  // Para cada platillo, cuenta cuántos ingredientes coinciden
+  const resultados = platillos.map(p=>{
+    const todos = todosLosIngredientes(p).map(i=>i.toLowerCase());
+    const match=[], miss=[];
+    ingredientesRefri.forEach(r=>{
+      if(todos.some(t=>t.includes(r)||r.includes(t.split(' ')[0]))) match.push(r);
+    });
+    // ingredientes del platillo que NO tengo
+    todos.forEach(t=>{
+      const tengo=ingredientesRefri.some(r=>t.includes(r)||r.includes(t.split(' ')[0]));
+      if(!tengo) miss.push(t);
+    });
+    return {...p, match, miss, score: match.length};
+  }).filter(p=>p.score>0).sort((a,b)=>b.score-a.score);
+
+  const el=document.getElementById('refri-resultados');
+  if(!resultados.length){
+    el.innerHTML=`<div class="refri-empty"><div class="empty-icon">🤷</div><p>No encontré platillos con esos ingredientes.<br>Intenta con otros.</p></div>`;
+    return;
+  }
+  el.innerHTML=`<p class="section-label" style="margin-bottom:12px">${resultados.length} platillo${resultados.length!==1?'s':''} posible${resultados.length!==1?'s':''}</p>`+
+    resultados.map(p=>`
+      <div class="sugerencia-card" onclick="abrirReceta('${p.id}')">
+        <div class="sugerencia-emoji">${p.emoji||'🍽'}</div>
+        <div class="sugerencia-info">
+          <p class="sugerencia-nombre">${p.nombre}</p>
+          <div style="margin-top:4px">
+            ${p.match.map(m=>`<span class="match-pill">✓ ${m}</span>`).join('')}
+            ${p.miss.slice(0,3).map(m=>`<span class="miss-pill">+ ${m}</span>`).join('')}
+            ${p.miss.length>3?`<span class="miss-pill">+${p.miss.length-3} más</span>`:''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+}
+
+// ── LISTA DE COMPRAS ──
+function renderSelectorLista(){
+  const el=document.getElementById('platillo-selector');
+  if(!platillos.length){el.innerHTML='<p style="padding:16px;color:var(--bark-light);font-size:0.85rem">No hay platillos guardados.</p>';return;}
+  el.innerHTML=platillos.map(p=>`
+    <label class="platillo-check">
+      <input type="checkbox" value="${p.id}" onchange="actualizarBtnGenerar()">
+      <span class="platillo-check-emoji">${p.emoji||'🍽'}</span>
+      <span class="platillo-check-name">${p.nombre}</span>
+    </label>
+  `).join('');
+}
+function actualizarBtnGenerar(){
+  const checked=document.querySelectorAll('#platillo-selector input:checked').length;
+  document.getElementById('btn-generar').disabled=checked===0;
+}
+function generarLista(){
+  const ids=[...document.querySelectorAll('#platillo-selector input:checked')].map(c=>c.value);
+  const seleccionados=platillos.filter(p=>ids.includes(String(p.id)));
+  if(!seleccionados.length)return;
+
+  const SECS=[
+    {key:'principal',label:'🥩 Principal'},
+    {key:'verduras',label:'🥦 Verduras'},
+    {key:'sazonadores',label:'🧂 Sazonadores'},
+    {key:'extras',label:'🫙 Extras'},
+  ];
+
+  // Agrupar ingredientes por sección, de todos los platillos elegidos
+  const agrupado={principal:[],verduras:[],sazonadores:[],extras:[]};
+  seleccionados.forEach(p=>{
+    SECS.forEach(({key})=>{
+      (p.ingredientes[key]||[]).forEach(ing=>{
+        agrupado[key].push({ing, platillo:p.nombre});
+      });
+    });
+  });
+
+  let html=`<p class="section-label" style="margin-bottom:16px">
+    Para: ${seleccionados.map(p=>p.emoji+' '+p.nombre).join(', ')}
+  </p>`;
+
+  SECS.forEach(({key,label})=>{
+    const items=agrupado[key];
+    if(!items.length)return;
+    html+=`<div class="lista-seccion">
+      <p class="lista-seccion-titulo">${label}</p>
+      ${items.map(({ing,platillo})=>{
+        listaCheckId++;
+        return `<div class="lista-item">
+          <input type="checkbox" id="lc${listaCheckId}">
+          <label for="lc${listaCheckId}">${ing}</label>
+          ${seleccionados.length>1?`<span class="lista-item-origen">${platillo}</span>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+
+  html+=`<div class="lista-acciones">
+    <button class="btn-lista-sec" onclick="limpiarLista()">🗑 Limpiar</button>
+    <button class="btn-lista-pri" onclick="copiarLista()">📋 Copiar lista</button>
+  </div>`;
+
+  const el=document.getElementById('lista-generada');
+  el.innerHTML=html;
+  el.classList.add('visible');
+  el.scrollIntoView({behavior:'smooth'});
+}
+function limpiarLista(){
+  document.getElementById('lista-generada').classList.remove('visible');
+  document.getElementById('lista-generada').innerHTML='';
+  document.querySelectorAll('#platillo-selector input').forEach(c=>c.checked=false);
+  document.getElementById('btn-generar').disabled=true;
+}
+function copiarLista(){
+  const items=[...document.querySelectorAll('.lista-item label')].map(l=>
+    (l.previousElementSibling.checked?'✓ ':'☐ ')+l.textContent
+  );
+  const texto=items.join('\n');
+  navigator.clipboard.writeText(texto).then(()=>toast('📋 Lista copiada')).catch(()=>toast('⚠️ No se pudo copiar'));
+}
+
+// ── API ──
+async function apiPost(body){
+  const { accion, platillo } = body;
+  const params = new URLSearchParams({
+    accion,
+    platillo: encodeURIComponent(JSON.stringify(platillo))
+  });
+  const res = await fetch(`${SCRIPT_URL}?${params.toString()}`);
+  const text = await res.text();
+  try { return JSON.parse(text); }
+  catch { return { ok: true }; }
+}
+
+cargarPlatillos();
+</script>
+</body>
+</html>
